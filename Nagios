@@ -1,0 +1,164 @@
+deb1 nagios configuration
+
+	sudo dpkg-reconfigure tzdata
+nagios
+	sudo apt-get install apache2 apache2-utils autoconf gcc libc6 libgd-dev make php python3 tree unzip wget libkrb5-dev openssl libssl-dev
+	sudo wget https://github.com/NagiosEnterprises/nagioscore/releases/download/nagios-4.4.14/nagios-4.4.14.tar.gz
+	tar -zxf nagios-4.4.14.tar.gz
+	cd
+	sudo ./configure --with-httpd-conf=/etc/apache2/sites-enabled/
+	sudo make all
+	sudo make install-groups-users
+	sudo passwd nagios
+	sudo usermod -a -G nagios www-data 
+	sudo make install 
+	ls -l /usr/local/nagios/
+	sudo make install-daemoninit
+	sudo make install-commandmode 
+	sudo make install-config 
+	sudo make install-webconf
+	
+Apache
+
+	sudo a2enmod rewrite
+	sudo a2enmod cgi
+	sudo htpasswd -c /usr/local/nagios/etc/htpasswd.users nagiosadmin
+	
+TEST
+
+	sudo /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+	sudo systemctl restart apache2
+	sudo systemctl restart nagios
+	
+open browser with this machines ip
+
+plugins
+	sudo apt-get install -y automake autotools-dev bc build-essential dc gawk gettext libmcrypt-dev libnet-snmp-perl libssl-dev snmp
+	sudo wget https://github.com/nagios-plugins/nagios-plugins/archive/release-2.4.6.tar.gz
+	tar -zxf release-2.4.6.tar.gz
+	cd
+	ls -l /usr/local/nagios/libexec
+	sudo ./configure
+	sudo make
+	sudo make install
+	
+NAGIOS TO MONITOR WINDOWS
+		download and install ncpa
+		set token(password) and check port no is 5693 and finish installation
+		in browser search debians ip 
+		
+NAGIOS TO MONITOR WINDOWS
+		
+		cd /usr/local/nagios/libexec
+		sudo wget http://192.168.0.51/ditiss/snort/check_ncpa.py (ncap file)
+		check for file(check_py) by ls -l
+		sudo nano check_ncpa.py 
+			edit python3
+		sudo ./check_ncpa.py -V
+		
+NAGIOS TO MONITOR DEB
+		sudo apt-get install wget libsqlite3-0
+		cd
+		sudo dpkg -i ncpa-latest-1.amd64.deb
+		
+		sudo nano /usr/local/ncpa/etc/ncpa.cfg
+				in api section set password
+				community_string=shuhari
+		sudo systemctl restart ncpa
+		
+		to test this machine 
+				browser-> https://this machines ip:5693
+TEST 		
+		sudo ./check_ncpa.py -t shuhari(->password) -H (IP of other pc which is to be monitored) -M memory/virtual
+	
+	cd /usr/local/nagios/etc/objects
+	  sudo ./check_ncpa.py -V
+		COMMENT hostgroups line
+	find commands.cfg (/usr/local/nagios/etc/objects )
+	sudo nano commands.cfg
+		add following at bottom 
+		
+		define command {
+				command_name	check_ncpa
+				command_line	$USER1$/check_ncpa.py -H $HOSTADDRESS$ $ARG1$
+		}
+		
+	cd /usr/local/nagios/etc/ 
+	sudo nano nagios.cfg
+		UNCOMMENT line of servers
+	mkdir servers
+	cd 
+	sudo nano win11.cfg
+		add following 
+		
+		
+		define host {
+
+        use                             windows-server
+        host_name                       win11-1
+        alias                           Windows 11 Sys 1
+        address                         192.168.80.184 (ip of pc to be monitored )
+        max_check_attempts                5
+
+}
+
+define service {
+
+        use                             generic-service
+        host_name                       win11-1
+        service_description             NCPA Agent Version
+        check_command                   check_ncpa!-t 'shuhari' -p -P 5693 -M system/agent_version
+}
+
+
+
+define service {
+
+        use                             generic-service
+        host_name                       win11-1
+        service_description             CPU Average
+        check_command                   check_ncpa!-t 'shuhari' -p -P 5693 -M cpu/percent -w 20 -c 40 -q 'aggregate=average'
+}
+
+define service {
+
+        use                             generic-service
+        host_name                       win11-1
+        service_description             C-drive
+        check_command                   check_ncpa!-t -H 192.168.80.184 -t 'shuhari' -M 'disk/logical/C:|'
+}
+
+define service {
+
+        use                             generic-service
+        host_name                       win11-1
+        service_description             virtual memory
+        check_command                   check_ncpa!-t -H 192.168.80.184 -t 'shuhari' -M 'memory/virtual'
+}
+define service {
+
+        use                             generic-service
+        host_name                       win11-1
+        service_description             check processes
+        check_command                   check_ncpa!-t -H 192.168.80.184 -t 'shuhari' -M 'processes' -q ''
+}
+define service {
+
+        use                             generic-service
+        host_name                       win11-1
+        service_description             network interface
+        check_command                   check_ncpa!-t -H 192.168.80.184 -t 'shuhari' -M 'interface/Ethernet0'
+}
+define service {
+
+        use                             generic-service
+        host_name                       win11-1
+        service_description             server name
+        check_command                   check_ncpa!-t -H 192.168.80.184 -t 'shuhari' -M 'system/node'
+}
+
+		
+	sudo systemctl restart nagios
+	sudo /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+
+
