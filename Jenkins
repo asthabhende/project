@@ -1,0 +1,65 @@
+#!/bin/bash 
+
+sudo apt-get install default-jre -y  
+                      
+sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian/jenkins.io-2023.key
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]" \
+  https://pkg.jenkins.io/debian binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins -y
+
+
+
+in debian
+sb@debian:~$
+> systemctl status jenkins
+> nano script.sh
+    paste all 
+> ls -l
+> chmod 744 script.sh
+> .\script.sh
+> ip a
+> sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+> cat /etc/passwd 
+> sudo  cat /var/lib/jenkins/secrets/initialAdminPassword
+
+ 
+
+create first admin user
+username = project
+password = project@123
+full name = project
+
+port 8080
+ 
+browser ip
+
+
+new item
+name = demo > pipeline
+ok
+
+- Github project
+  url github https code
+
+
+- branch specifier
+/*master
+
+
+
+ SAVE
+---------
+
+
+
+
+# after jenkins 
+
+> sudo apt-get install apache 2
+>  cd /var/www/html
+> ls -l
+> cd ..
+> ls -l
